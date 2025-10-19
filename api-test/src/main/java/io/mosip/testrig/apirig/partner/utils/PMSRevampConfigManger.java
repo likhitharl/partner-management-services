@@ -15,7 +15,7 @@ public class PMSRevampConfigManger extends ConfigManager{
 	public static void init() {
 		Logger configManagerLogger = Logger.getLogger(ConfigManager.class);
 		configManagerLogger.setLevel(Level.WARN);
-		
+
 		Map<String, Object> moduleSpecificPropertiesMap = new HashMap<>();
 		// Load scope specific properties
 		try {
@@ -23,12 +23,29 @@ public class PMSRevampConfigManger extends ConfigManager{
 			Properties props = getproperties(path);
 			// Convert Properties to Map and add to moduleSpecificPropertiesMap
 			for (String key : props.stringPropertyNames()) {
-				moduleSpecificPropertiesMap.put(key, props.getProperty(key));
+				String value = System.getenv(key) == null ? props.getProperty(key) : System.getenv(key);
+				moduleSpecificPropertiesMap.put(key, value);
 			}
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage());
 		}
 		// Add module specific properties as well.
 		init(moduleSpecificPropertiesMap);
+	}
+
+	public static String getKeymangrDbUrl() {
+		return "jdbc:postgresql://"
+				+ (getproperty("km-db-server").isBlank() ? getproperty("db-server") : getproperty("km-db-server")) + ":"
+				+ (getproperty("km-db-port").isBlank() ? getproperty("db-port") : getproperty("km-db-port"))
+				+ "/mosip_keymgr";
+	}
+
+	public static String getKeymangrDbUser() {
+		return getproperty("km-db-su-user").isBlank() ? getproperty("db-su-user") : getproperty("km-db-su-user");
+	}
+
+	public static String getKeymangrDbPass() {
+		return getproperty("km-db-postgres-password").isBlank() ? getproperty("postgres-password")
+				: getproperty("km-db-postgres-password");
 	}
 }
